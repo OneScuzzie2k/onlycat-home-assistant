@@ -1,0 +1,19 @@
+{
+  "domain": "onlycat",
+  "name": "OnlyCat",
+  "codeowners": [
+    "@OnlyCatAI"
+  ],
+  "config_flow": true,
+  "dependencies": [
+    "stream"
+  ],
+  "documentation": "https://github.com/OnlyCatAI/onlycat-home-assistant",
+  "iot_class": "cloud_push",
+  "issue_tracker": "https://github.com/OnlyCatAI/onlycat-home-assistant/issues",
+  "requirements": [
+    "python-socketio==5.16.1",
+    "jsonschema==4.26.0"
+  ],
+  "version": "2.0.7.3.3"
+}

@@ -1,0 +1,97 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "description": "Erstelle einen API-Schlüssel in der OnlyCat App unter Konto > API-Schlüssel.",
+                "data": {
+                    "api_key": "OnlyCat API-Schlüssel",
+                    "ignore_flap_motion_rules": "Ignoriere Regeln basierend auf Klappenbewegungen",
+                    "ignore_motion_sensor_rules": "Ignoriere Regeln basierend auf Bewegungssensoren",
+                    "enable_detailed_metrics": "Erweiterte Metriken einschalten (~50 weitere Attribute auf dem Fehler-Sensor)",
+                    "enable_debug_logging": "Debug-Logging aktivieren",
+                    "event_retry_delays_seconds": "Wiederholungsintervalle fuer Events in Sekunden (CSV, z. B. 1,3,6)",
+                    "final_event_retry_delays_seconds": "Wiederholungsintervalle fuer finale Events in Sekunden (CSV, z. B. 0,1,3)",
+                    "poll_interval_hours": "Aktualisierungsintervall in Stunden fuer Fehler- und Metriksensoren"
+                }
+            },
+            "reconfigure": {
+                "description": "OnlyCat Integration neu konfigurieren - Einstellungen aktualisieren.",
+                "data": {
+                    "ignore_flap_motion_rules": "Ignoriere Regeln basierend auf Klappenbewegungen",
+                    "ignore_motion_sensor_rules": "Ignoriere Regeln basierend auf Bewegungssensoren",
+                    "enable_detailed_metrics": "Erweiterte Metriken einschalten (~50 weitere Attribute auf dem Fehler-Sensor)",
+                    "enable_debug_logging": "Debug-Logging aktivieren",
+                    "event_retry_delays_seconds": "Wiederholungsintervalle fuer Events in Sekunden (CSV, z. B. 1,3,6)",
+                    "final_event_retry_delays_seconds": "Wiederholungsintervalle fuer finale Events in Sekunden (CSV, z. B. 0,1,3)",
+                    "poll_interval_hours": "Aktualisierungsintervall in Stunden fuer Fehler- und Metriksensoren"
+                }
+            }
+        },
+        "error": {
+            "auth": "API Key falsch.",
+            "connection": "Konnte nicht mit der API verbinden.",
+            "unknown": "Unbekannter Fehler."
+        },
+        "abort": {
+            "already_configured": "Diese Entität ist bereits konfiguriert."
+        }
+    },
+    "entity": {
+        "binary_sensor": {
+            "onlycat_connection_sensor": {
+                "name": "Erreichbarkeit"
+            },
+            "onlycat_event_sensor": {
+                "name": "Klappenbewegung"
+            },
+            "onlycat_contraband_sensor": {
+                "name": "Beuteerkennung"
+            },
+            "onlycat_lock_sensor": {
+                "name": "Verriegelung"
+            },
+            "onlycat_error_sensor": {
+                "name": "Fehlermeldungen"
+            },
+            "onlycat_human_sensor": {
+                "name": "Menschliche Bewegung"
+            }
+        },
+        "device_tracker": {
+            "onlycat_pet_tracker": {
+                "name": "{pet_name}s Anwesenheit"
+            }
+        },
+        "select": {
+            "onlycat_policy_select": {
+                "name": "Zugangsrichtlinie"
+            }
+        },
+        "button": {
+            "onlycat_reboot_button": {
+                "name": "Neustarten"
+            },
+            "onlycat_unlock_button": {
+                "name": "Aufschließen"
+            }
+        },
+        "image": {
+            "onlycat_last_activity_image": {
+                "name": "Letztes Bild"
+            }
+        },
+        "camera": {
+            "onlycat_last_activity_video": {
+                "name": "Letztes Video"
+            }
+        },
+        "sensor": {
+            "onlycat_last_rfid_event_sensor": {
+                "name": "Letztes RFID-Ereignis"
+            },
+            "onlycat_recent_activity_sensor": {
+                "name": "Letzte Aktivität"
+            }
+        }
+    }
+}

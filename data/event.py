@@ -1,0 +1,193 @@
+"""Custom types for onlycat representing a flap event."""
+
+from __future__ import annotations
+
+import logging
+from dataclasses import dataclass, fields
+from datetime import datetime
+from enum import Enum
+
+from .type import Type
+
+_LOGGER = logging.getLogger(__name__)
+
+
+class EventTriggerSource(Enum):
+    """Enum representing the source of an OnlyCat flap event."""
+
+    UNKNOWN = -1
+    MANUAL = 0
+    REMOTE = 1
+    INDOOR_MOTION = 2
+    OUTDOOR_MOTION = 3
+
+    @classmethod
+    def _missing_(cls, value: str) -> EventTriggerSource:
+        """Handle missing enum values in case of API extensions."""
+        _LOGGER.warning("Unknown event trigger source: %s", value)
+        return cls.UNKNOWN
+
+
+class EventClassification(Enum):
+    """Enum representing the classification of an OnlyCat flap event."""
+
+    UNKNOWN = 0
+    CLEAR = 1
+    SUSPICIOUS = 2
+    CONTRABAND = 3
+    HUMAN_ACTIVITY = 4
+    REMOTE_UNLOCK = 10
+
+    @classmethod
+    def _missing_(cls, value: str) -> EventClassification:
+        """Handle missing enum values in case of API extensions."""
+        _LOGGER.warning("Unknown event classification: %s", value)
+        return cls.UNKNOWN
+
+
+class EventFlapstate(Enum):
+    """Enum representing the flap state during an OnlyCat flap event."""
+
+    CLOSED = 0
+    OPEN_OUTWARD = 1
+    OPEN_INWARD = 2
+    INVALID = 3
+
+    @classmethod
+    def _missing_(cls, value: str) -> EventFlapstate:
+        """Handle missing enum values in case of API extensions."""
+        _LOGGER.warning("Unknown event flap state: %s", value)
+        return cls.INVALID
+
+
+class EventMotionstate(Enum):
+    """Enum representing the motion sensor state during an OnlyCat flap event."""
+
+    UNKNOWN = 0
+    NONE = 1
+    INDOOR = 2
+    OUTDOOR = 3
+
+    @classmethod
+    def _missing_(cls, value: str) -> EventMotionstate:
+        """Handle missing enum values in case of API extensions."""
+        _LOGGER.warning("Unknown event motion sensor state: %s", value)
+        return cls.UNKNOWN
+
+
+@dataclass
+class Event:
+    """Data representing an OnlyCat flap event."""
+
+    global_id: int | None = None
+    device_id: str | None = None
+    event_id: int | None = None
+    timestamp: datetime | None = None
+    frame_count: int | None = None
+    event_trigger_source: EventTriggerSource | None = EventTriggerSource.UNKNOWN
+    event_classification: EventClassification | None = EventClassification.UNKNOWN
+    event_manual_classification: EventClassification | None = None
+    event_manual_classification_user_id: int | None = None
+    poster_frame_index: int | None = None
+    access_token: str | None = None
+    rfid_codes: list[str] | None = None
+    flap_state: EventFlapstate | None = None
+    motion_sensor_state: EventMotionstate | None = None
+
+    @classmethod
+    def from_api_response(cls, api_event: dict) -> Event | None:
+        """Create an Event instance from API response data."""
+        if not isinstance(api_event, dict) or not api_event:
+            return None
+        timestamp = api_event.get("timestamp")
+        trigger_source = api_event.get("eventTriggerSource")
+        classification = api_event.get("eventClassification")
+        manual_classification = api_event.get("eventManualClassification")
+        flap_state = api_event.get("flapState")
+        motion_sensor_state = api_event.get("motionSensorState")
+
+        return cls(
+            global_id=api_event.get("globalId"),
+            device_id=api_event.get("deviceId"),
+            event_id=api_event.get("eventId"),
+            timestamp=datetime.fromisoformat(timestamp) if timestamp else None,
+            frame_count=api_event.get("frameCount"),
+            event_trigger_source=EventTriggerSource(int(trigger_source))
+            if trigger_source is not None
+            else None,
+            event_classification=EventClassification(int(classification))
+            if classification is not None
+            else None,
+            event_manual_classification=EventClassification(int(manual_classification))
+            if manual_classification is not None
+            else None,
+            event_manual_classification_user_id=api_event.get(
+                "eventManualClassificationUserId"
+            ),
+            poster_frame_index=api_event.get("posterFrameIndex"),
+            access_token=api_event.get("accessToken"),
+            rfid_codes=api_event.get("rfidCodes") or [],
+            flap_state=EventFlapstate(int(flap_state))
+            if flap_state is not None
+            else None,
+            motion_sensor_state=EventMotionstate(int(motion_sensor_state))
+            if motion_sensor_state is not None
+            else None,
+        )
+
+    def update_from(self, updated_event: Event) -> None:
+        """Update the event with data from another event instance."""
+        if updated_event is None:
+            return
+        for field in fields(self):
+            new_value = getattr(updated_event, field.name)
+            if new_value is not None:
+                if field.name == "rfid_codes":
+                    old_value = getattr(self, field.name) or []
+                    new_value = old_value + list(set(new_value) - set(old_value))
+                setattr(self, field.name, new_value)
+
+    @property
+    def effective_classification(self) -> EventClassification | None:
+        """Return OnlyCat's manual-over-automatic event classification."""
+        if self.event_manual_classification is not None:
+            return self.event_manual_classification
+        return self.event_classification
+
+
+@dataclass
+class EventUpdate:
+    """Data representing an update to an OnlyCat flap event."""
+
+    device_id: str
+    event_id: int
+    type: Type
+    event: Event
+
+    @classmethod
+    def from_api_response(cls, api_event: dict) -> EventUpdate | None:
+        """Create an EventUpdate instance from API response data."""
+        if not isinstance(api_event, dict) or not api_event:
+            return None
+        body = api_event.get("body") or {}
+        device_id = api_event.get("deviceId", body.get("deviceId"))
+        event_id = api_event.get("eventId", body.get("eventId"))
+        event_type = (
+            Type(api_event.get("type")) if api_event.get("type") else Type.UNKNOWN
+        )
+        event = Event.from_api_response(body)
+
+        if event is None:
+            event = Event()
+
+        if event.device_id is None:
+            event.device_id = device_id
+        if event.event_id is None:
+            event.event_id = event_id
+
+        return cls(
+            device_id=device_id,
+            event_id=event_id,
+            type=event_type,
+            event=event,
+        )

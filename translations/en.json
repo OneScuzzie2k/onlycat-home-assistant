@@ -1,0 +1,97 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "description": "Create an API key in the OnlyCat app under Account > API Keys.",
+                "data": {
+                    "api_key": "OnlyCat API Key",
+                    "ignore_flap_motion_rules": "Ignore rules based on flap motion",
+                    "ignore_motion_sensor_rules": "Ignore rules based on motion sensor",
+                    "enable_detailed_metrics": "Enable detailed metrics (adds ~50 more attributes to error-sensor)",
+                    "enable_debug_logging": "Enable debug logging",
+                    "event_retry_delays_seconds": "Event retry delays in seconds (CSV, e.g. 1,3,6)",
+                    "final_event_retry_delays_seconds": "Final-event retry delays in seconds (CSV, e.g. 0,1,3)",
+                    "poll_interval_hours": "Polling interval in hours for error and metric sensors"
+                }
+            },
+            "reconfigure": {
+                "description": "Reconfigure OnlyCat integration. Update settings.",
+                "data": {
+                    "ignore_flap_motion_rules": "Ignore rules based on flap motion",
+                    "ignore_motion_sensor_rules": "Ignore rules based on motion sensor",
+                    "enable_detailed_metrics": "Enable detailed metrics (adds ~50 more attributes to error-sensor)",
+                    "enable_debug_logging": "Enable debug logging",
+                    "event_retry_delays_seconds": "Event retry delays in seconds (CSV, e.g. 1,3,6)",
+                    "final_event_retry_delays_seconds": "Final-event retry delays in seconds (CSV, e.g. 0,1,3)",
+                    "poll_interval_hours": "Polling interval in hours for error and metric sensors"
+                }
+            }
+        },
+        "error": {
+            "auth": "API key wrong.",
+            "connection": "Unable to connect to the server.",
+            "unknown": "Unknown error occurred."
+        },
+        "abort": {
+            "already_configured": "This entry is already configured."
+        }
+    },
+    "entity": {
+        "binary_sensor": {
+            "onlycat_connection_sensor": {
+                "name": "Connectivity"
+            },
+            "onlycat_event_sensor": {
+                "name": "Flap event"
+            },
+            "onlycat_contraband_sensor": {
+                "name": "Contraband detection"
+            },
+            "onlycat_lock_sensor": {
+                "name": "Lock state"
+            },
+            "onlycat_error_sensor": {
+                "name": "Errors"
+            },
+            "onlycat_human_sensor": {
+                "name": "Human activity"
+            }
+        },
+        "device_tracker": {
+            "onlycat_pet_tracker": {
+                "name": "{pet_name}'s presence"
+            }
+        },
+        "select": {
+            "onlycat_policy_select": {
+                "name": "Door Policy"
+            }
+        },
+        "button": {
+            "onlycat_reboot_button": {
+                "name": "Reboot"
+            },
+            "onlycat_unlock_button": {
+                "name": "Unlock"
+            }
+        },
+        "image": {
+            "onlycat_last_activity_image": {
+                "name": "Last activity image"
+            }
+        },
+        "camera": {
+            "onlycat_last_activity_video": {
+                "name": "Last activity video"
+            }
+        },
+        "sensor": {
+            "onlycat_last_rfid_event_sensor": {
+                "name": "Last RFID-tagged event"
+            },
+            "onlycat_recent_activity_sensor": {
+                "name": "Recent activity"
+            }
+        }
+    }
+}

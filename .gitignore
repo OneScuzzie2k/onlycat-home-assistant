@@ -1,0 +1,27 @@
+# Local Home Assistant configuration, environments and diagnostic data
+.ha-config/
+.ha-venv/
+.venv/
+.python/
+.uv-cache/
+.pytest_cache/
+.ruff_cache/
+__pycache__/
+*.py[cod]
+*.log
+*.jsonl
+.env
+.env.*
+
+# Historical snapshots and generated deployment packages
+backups/
+deploy/
+upstream*/
+upstream*.zip
+dist/
+
+# Local editor and operating-system files
+.idea/
+.vscode/
+Thumbs.db
+.DS_Store
