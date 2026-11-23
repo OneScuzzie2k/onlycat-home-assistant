@@ -2,18 +2,18 @@
   "domain": "onlycat",
   "name": "OnlyCat",
   "codeowners": [
-    "@OnlyCatAI"
+    "@OneScuzzie2k"
   ],
   "config_flow": true,
   "dependencies": [
     "stream"
   ],
-  "documentation": "https://github.com/OnlyCatAI/onlycat-home-assistant",
+  "documentation": "https://github.com/OneScuzzie2k/onlycat-home-assistant",
   "iot_class": "cloud_push",
-  "issue_tracker": "https://github.com/OnlyCatAI/onlycat-home-assistant/issues",
+  "issue_tracker": "https://github.com/OneScuzzie2k/onlycat-home-assistant/issues",
   "requirements": [
     "python-socketio==5.16.1",
     "jsonschema==4.26.0"
   ],
-  "version": "2.0.9.1"
+  "version": "2.0.10.1"
 }

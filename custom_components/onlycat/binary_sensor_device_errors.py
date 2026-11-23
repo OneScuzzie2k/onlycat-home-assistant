@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from homeassistant.components.binary_sensor import (
     BinarySensorDeviceClass,
@@ -31,6 +31,37 @@ ENTITY_DESCRIPTION = BinarySensorEntityDescription(
     device_class=BinarySensorDeviceClass.PROBLEM,
     translation_key="onlycat_error_sensor",
 )
+
+
+# Measures the platform stores but this integration does not expose as attributes.
+HIDDEN_MEASURES = frozenset(
+    {
+        "bluetooth_state",
+        "bluetooth_state_change_count",
+        "target_lock_state_change_count",
+    }
+)
+
+
+def latest_measures(samples: Any) -> dict:
+    """
+    Return the measures of the newest telemetry sample.
+
+    `samples` is the reply to getDeviceTelemetry, newest first:
+
+        [{deviceId, timestamp, measures: {name: value, ...}}, ...]
+
+    Anything else (no reply, an error object, no sample in the window) gives {}.
+    Measures in HIDDEN_MEASURES are left out.
+    """
+    if not isinstance(samples, list) or not samples:
+        return {}
+    measures = samples[0].get("measures") if isinstance(samples[0], dict) else None
+    if not isinstance(measures, dict):
+        return {}
+    return {
+        name: value for name, value in measures.items() if name not in HIDDEN_MEASURES
+    }
 
 
 class OnlyCatErrorSensor(CoordinatorEntity, BinarySensorEntity):
@@ -67,19 +98,11 @@ class OnlyCatErrorSensor(CoordinatorEntity, BinarySensorEntity):
 
     @callback
     def _handle_coordinator_update(self) -> None:
-        """Handle v2.0.7 reboot-log data from the coordinator."""
+        """Handle reboot logs and the latest telemetry sample from the coordinator."""
         device_data = self.coordinator.data.get(self.device.device_id, {})
         errors = device_data.get("errors") or []
         self._attr_is_on = len(errors) > 0
-        if device_data.get("metrics", None) is not None:
-            metrics = {}
-            for key in [x["measureName"] for x in device_data["metrics"]]:
-                tmp = [x for x in device_data["metrics"] if x["measureName"] == key]
-                if len(tmp) == 0:
-                    continue
-                tmp.sort(key=lambda x: x["time"], reverse=True)
-                metrics[key] = tmp[0]["value"]
-        self._attr_extra_state_attributes = {"errors": errors} | (
-            metrics if device_data.get("metrics", None) is not None else {}
+        self._attr_extra_state_attributes = {"errors": errors} | latest_measures(
+            device_data.get("metrics")
         )
         self.async_write_ha_state()

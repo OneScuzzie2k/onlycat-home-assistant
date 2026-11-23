@@ -11,7 +11,7 @@
                     "enable_debug_logging": "Enable debug logging",
                     "event_retry_delays_seconds": "Event retry delays in seconds (CSV, e.g. 1,3,6)",
                     "final_event_retry_delays_seconds": "Final-event retry delays in seconds (CSV, e.g. 0,1,3)",
-                    "poll_interval_hours": "Polling interval in hours for error and metric sensors"
+                    "poll_interval_hours": "Polling interval in hours for error and metric sensors (0.25 = 15 minutes)"
                 }
             },
             "reconfigure": {
@@ -23,7 +23,7 @@
                     "enable_debug_logging": "Enable debug logging",
                     "event_retry_delays_seconds": "Event retry delays in seconds (CSV, e.g. 1,3,6)",
                     "final_event_retry_delays_seconds": "Final-event retry delays in seconds (CSV, e.g. 0,1,3)",
-                    "poll_interval_hours": "Polling interval in hours for error and metric sensors"
+                    "poll_interval_hours": "Polling interval in hours for error and metric sensors (0.25 = 15 minutes)"
                 }
             }
         },

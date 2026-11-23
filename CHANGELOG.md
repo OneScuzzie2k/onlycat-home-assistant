@@ -1,6 +1,16 @@
 # Changelog
 
-## 2.0.9.1 — 2026-11-23
+## 2.0.10.1 — 2026-11-23
+
+Merged stable upstream v2.0.10 (commit `cbdf7782ca56d88511be0349df294deddebde728`, released 2026-11-22).
+
+- Fetch one latest telemetry sample per device using `getDeviceTelemetry` with `limit: 1`, replacing the deprecated metrics endpoint.
+- Keep existing metric attribute names, exposing only measures present in the latest sample and excluding the upstream hidden measures.
+- Allow polling every 15 minutes (0.25 hours), in 15-minute steps, in initial setup and reconfiguration.
+- Round reboot-log windows up to whole hours; below hourly polling, a reboot can keep the error sensor on for up to one hour.
+- Point integration documentation and issue reporting at the personal GitHub repository; retain original project attribution.
+
+## 2.0.9.1 â€” 2026-11-23
 
 Merged applicable fixes from stable upstream v2.0.9 (commit `340218709794e617855242be22edcb2aa0ab984e`). Its changelog groups these fixes under v2.0.8.
 
@@ -13,7 +23,7 @@ Merged applicable fixes from stable upstream v2.0.9 (commit `340218709794e617855
 - Adopt the standard HACS repository layout, retain the upstream license, and add test and release workflows.
 - Make journal and media tests use current test timestamps so the seven-day retention policy does not expire their fixtures.
 
-Runtime dependency pins match stable upstream. The 2.0.10 telemetry prerelease is intentionally pending stable release and review.
+Runtime dependency pins match stable upstream.
 
 ## Previous custom version: 2.0.7.3.3
 

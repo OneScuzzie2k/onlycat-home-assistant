@@ -2,16 +2,16 @@
     "config": {
         "step": {
             "user": {
-                "description": "Erstelle einen API-Schlüssel in der OnlyCat App unter Konto > API-Schlüssel.",
+                "description": "Erstelle einen API-SchlÃ¼ssel in der OnlyCat App unter Konto > API-SchlÃ¼ssel.",
                 "data": {
-                    "api_key": "OnlyCat API-Schlüssel",
+                    "api_key": "OnlyCat API-SchlÃ¼ssel",
                     "ignore_flap_motion_rules": "Ignoriere Regeln basierend auf Klappenbewegungen",
                     "ignore_motion_sensor_rules": "Ignoriere Regeln basierend auf Bewegungssensoren",
                     "enable_detailed_metrics": "Erweiterte Metriken einschalten (~50 weitere Attribute auf dem Fehler-Sensor)",
                     "enable_debug_logging": "Debug-Logging aktivieren",
                     "event_retry_delays_seconds": "Wiederholungsintervalle fuer Events in Sekunden (CSV, z. B. 1,3,6)",
                     "final_event_retry_delays_seconds": "Wiederholungsintervalle fuer finale Events in Sekunden (CSV, z. B. 0,1,3)",
-                    "poll_interval_hours": "Aktualisierungsintervall in Stunden fuer Fehler- und Metriksensoren"
+                    "poll_interval_hours": "Aktualisierungsintervall in Stunden fuer Fehler- und Metriksensoren (0,25 = 15 Minuten)"
                 }
             },
             "reconfigure": {
@@ -23,7 +23,7 @@
                     "enable_debug_logging": "Debug-Logging aktivieren",
                     "event_retry_delays_seconds": "Wiederholungsintervalle fuer Events in Sekunden (CSV, z. B. 1,3,6)",
                     "final_event_retry_delays_seconds": "Wiederholungsintervalle fuer finale Events in Sekunden (CSV, z. B. 0,1,3)",
-                    "poll_interval_hours": "Aktualisierungsintervall in Stunden fuer Fehler- und Metriksensoren"
+                    "poll_interval_hours": "Aktualisierungsintervall in Stunden fuer Fehler- und Metriksensoren (0,25 = 15 Minuten)"
                 }
             }
         },
@@ -33,7 +33,7 @@
             "unknown": "Unbekannter Fehler."
         },
         "abort": {
-            "already_configured": "Diese Entität ist bereits konfiguriert."
+            "already_configured": "Diese EntitÃ¤t ist bereits konfiguriert."
         }
     },
     "entity": {
@@ -72,7 +72,7 @@
                 "name": "Neustarten"
             },
             "onlycat_unlock_button": {
-                "name": "Aufschließen"
+                "name": "AufschlieÃŸen"
             }
         },
         "image": {
@@ -90,7 +90,7 @@
                 "name": "Letztes RFID-Ereignis"
             },
             "onlycat_recent_activity_sensor": {
-                "name": "Letzte Aktivität"
+                "name": "Letzte AktivitÃ¤t"
             }
         }
     }
