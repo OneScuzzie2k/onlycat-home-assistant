@@ -13,7 +13,7 @@ Personal version of [OnlyCatAI's Home Assistant integration](https://github.com/
 
 ## Installation and updates
 
-Add **https://github.com/OneScuzzie2k/onlycat-home-assistant** to HACS under **Custom repositories**, with category **Integration**. Install OnlyCat and restart Home Assistant. Configure the integration through Settings â†’ Devices & services using an OnlyCat API key.
+Add **https://github.com/OneScuzzie2k/onlycat-home-assistant** to HACS under **Custom repositories**, with category **Integration**. Install OnlyCat and restart Home Assistant. Configure the integration through Settings → Devices & services using an OnlyCat API key.
 
 This version uses the same `onlycat` integration domain as the official version. Install one version at a time. When switching an existing installation, take a Home Assistant backup, replace the integration files and restart; existing configuration and entity identities are retained by the code.
 

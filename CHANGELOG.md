@@ -10,7 +10,7 @@ Merged stable upstream v2.0.10 (commit `cbdf7782ca56d88511be0349df294deddebde728
 - Round reboot-log windows up to whole hours; below hourly polling, a reboot can keep the error sensor on for up to one hour.
 - Point integration documentation and issue reporting at the personal GitHub repository; retain original project attribution.
 
-## 2.0.9.1 â€” 2026-11-23
+## 2.0.9.1 — 2026-11-23
 
 Merged applicable fixes from stable upstream v2.0.9 (commit `340218709794e617855242be22edcb2aa0ab984e`). Its changelog groups these fixes under v2.0.8.
 

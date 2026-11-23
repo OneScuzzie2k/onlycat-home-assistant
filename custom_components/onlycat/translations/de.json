@@ -2,9 +2,9 @@
     "config": {
         "step": {
             "user": {
-                "description": "Erstelle einen API-SchlÃ¼ssel in der OnlyCat App unter Konto > API-SchlÃ¼ssel.",
+                "description": "Erstelle einen API-Schlüssel in der OnlyCat App unter Konto > API-Schlüssel.",
                 "data": {
-                    "api_key": "OnlyCat API-SchlÃ¼ssel",
+                    "api_key": "OnlyCat API-Schlüssel",
                     "ignore_flap_motion_rules": "Ignoriere Regeln basierend auf Klappenbewegungen",
                     "ignore_motion_sensor_rules": "Ignoriere Regeln basierend auf Bewegungssensoren",
                     "enable_detailed_metrics": "Erweiterte Metriken einschalten (~50 weitere Attribute auf dem Fehler-Sensor)",
@@ -33,7 +33,7 @@
             "unknown": "Unbekannter Fehler."
         },
         "abort": {
-            "already_configured": "Diese EntitÃ¤t ist bereits konfiguriert."
+            "already_configured": "Diese Entität ist bereits konfiguriert."
         }
     },
     "entity": {
@@ -72,7 +72,7 @@
                 "name": "Neustarten"
             },
             "onlycat_unlock_button": {
-                "name": "AufschlieÃŸen"
+                "name": "Aufschließen"
             }
         },
         "image": {
@@ -90,7 +90,7 @@
                 "name": "Letztes RFID-Ereignis"
             },
             "onlycat_recent_activity_sensor": {
-                "name": "Letzte AktivitÃ¤t"
+                "name": "Letzte Aktivität"
             }
         }
     }
