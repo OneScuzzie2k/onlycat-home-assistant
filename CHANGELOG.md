@@ -1,6 +1,10 @@
 # Changelog
 
-## 2.0.10.1 — 2026-11-23
+## 2.0.10.2 — 2026-11-23
+
+First published custom release, including all changes below. Add the Home Assistant camera/stream NumPy dependency to the clean CI environment so the camera regression tests can run there as well as locally.
+
+## 2.0.10.1 — 2026-11-23 (unpublished preparation)
 
 Merged stable upstream v2.0.10 (commit `cbdf7782ca56d88511be0349df294deddebde728`, released 2026-11-22).
 

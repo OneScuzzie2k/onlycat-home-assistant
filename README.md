@@ -1,6 +1,6 @@
 # OnlyCat custom integration for Home Assistant
 
-Personal version of [OnlyCatAI's Home Assistant integration](https://github.com/OnlyCatAI/onlycat-home-assistant), with additional activity history, media playback and connection recovery features. Based on stable upstream v2.0.10, with custom version **2.0.10.1**.
+Personal version of [OnlyCatAI's Home Assistant integration](https://github.com/OnlyCatAI/onlycat-home-assistant), with additional activity history, media playback and connection recovery features. Based on stable upstream v2.0.10, with custom version **2.0.10.2**.
 
 ## Custom features
 
@@ -38,7 +38,7 @@ The Python tests are pinned to the existing local Home Assistant test baseline (
 
 Keep the official repository as the Git remote named `upstream`, and your own repository as `origin`. Review official releases and compare their changes before merging: this branch has substantial custom changes to event processing, reconnects and tracking.
 
-For each release, update `custom_components/onlycat/manifest.json` and `CHANGELOG.md`, run the checks above, commit and push, then create a matching tag such as `v2.0.10.1`. The release workflow checks the tag against the manifest and publishes the integration and optional card ZIP files. HACS can then offer that tagged version from your repository.
+For each release, update `custom_components/onlycat/manifest.json` and `CHANGELOG.md`, run the checks above, commit and push, then create a matching tag such as `v2.0.10.2`. The release workflow checks the tag against the manifest and publishes the integration and optional card ZIP files. HACS can then offer that tagged version from your repository.
 
 ## Attribution
 
