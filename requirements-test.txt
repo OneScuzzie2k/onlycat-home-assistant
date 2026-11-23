@@ -6,3 +6,5 @@ python-socketio==5.16.1
 jsonschema==4.26.0
 # Required when importing Home Assistant's camera/stream platforms in tests.
 numpy==2.3.2
+PyTurboJPEG==1.8.3
+av==17.0.1
