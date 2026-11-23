@@ -13,7 +13,7 @@ from custom_components.onlycat.data.activity_journal import (
 from custom_components.onlycat.data.event import Event, EventClassification
 from custom_components.onlycat.data.event_summary import EventSummary, SubEvent
 
-NOW = datetime(2026, 9, 29, 8, 0, tzinfo=UTC)
+NOW = datetime.now(UTC)
 
 
 def _activity(

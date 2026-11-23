@@ -29,7 +29,7 @@ from custom_components.onlycat.sensor_recent_activity import (
 from custom_components.onlycat.websocket_api import websocket_activity_journal
 from homeassistant.const import STATE_HOME, STATE_NOT_HOME
 
-NOW = datetime(2026, 9, 24, 15, 42, tzinfo=UTC)
+NOW = datetime.now(UTC)
 
 
 def _activity(

@@ -6,7 +6,6 @@ import logging
 from typing import TYPE_CHECKING
 
 from homeassistant.components.button import (
-    ButtonDeviceClass,
     ButtonEntity,
     ButtonEntityDescription,
 )
@@ -23,14 +22,14 @@ if TYPE_CHECKING:
 
 ENTITY_DESCRIPTION = ButtonEntityDescription(
     key="OnlyCat",
-    name="Reboot",
-    device_class=ButtonDeviceClass.RESTART,
-    translation_key="onlycat_reboot_button",
+    name="Unlock",
+    icon="mdi:lock-open",
+    translation_key="onlycat_unlock_button",
 )
 
 
-class OnlyCatRebootButton(ButtonEntity):
-    """OnlyCat reboot button class."""
+class OnlyCatUnlockButton(ButtonEntity):
+    """OnlyCat unlock button class."""
 
     _attr_has_entity_name = True
     _attr_should_poll = False
@@ -52,16 +51,24 @@ class OnlyCatRebootButton(ButtonEntity):
         """Initialize the button class."""
         self.entity_description = ENTITY_DESCRIPTION
         self.device: Device = device
-        self._attr_unique_id = device.device_id.replace("-", "_").lower() + "_reboot"
+        self._attr_unique_id = device.device_id.replace("-", "_").lower() + "_unlock"
         self._api_client = api_client
         self.entity_id = "button." + self._attr_unique_id
         self._attr_available = self._api_client.is_connected
-        self._api_client.add_event_listener("connectionState", self.on_connection_state)
+
+    async def async_added_to_hass(self) -> None:
+        """Subscribe after HA adds the entity and release listeners on removal."""
+        await super().async_added_to_hass()
+        self.async_on_remove(
+            self._api_client.add_event_listener(
+                "connectionState", self.on_connection_state
+            )
+        )
 
     async def async_press(self) -> None:
         """Handle button press."""
         await self._api_client.send_message(
-            "runDeviceCommand", {"deviceId": self.device.device_id, "command": "reboot"}
+            "runDeviceCommand", {"deviceId": self.device.device_id, "command": "unlock"}
         )
 
     async def on_connection_state(self, state: OnlyCatConnectionState) -> None:

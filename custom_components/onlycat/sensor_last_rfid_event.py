@@ -63,13 +63,23 @@ class OnlyCatLastRfidEventSensor(SensorEntity):
         self.entity_id = "sensor." + self._attr_unique_id
         self._attr_available = self._event_store.connection_state.connected
 
-        self._event_store.add_event_listener(
-            self.device.device_id, self.on_event_update
+    async def async_added_to_hass(self) -> None:
+        """Subscribe after HA adds the entity and release listeners on removal."""
+        await super().async_added_to_hass()
+        self.async_on_remove(
+            self._event_store.add_event_listener(
+                self.device.device_id, self.on_event_update
+            )
         )
-        self._event_store.add_event_summary_listener(
-            self.device.device_id, self.on_event_summary_update
+        self.async_on_remove(
+            self._event_store.add_event_summary_listener(
+                self.device.device_id, self.on_event_summary_update
+            )
         )
-        self._event_store.add_connection_listener(self.on_connection_state)
+        self.async_on_remove(
+            self._event_store.add_connection_listener(self.on_connection_state)
+        )
+        self._attr_available = self._event_store.connection_state.connected
 
     async def on_event_update(self, event: Event) -> None:
         """Handle merged event updates from EventStore."""
@@ -83,9 +93,7 @@ class OnlyCatLastRfidEventSensor(SensorEntity):
         if not summary or summary.device_id != self.device.device_id:
             return
         rfid_codes = [
-            subevent.rfid_code
-            for subevent in summary.subevents
-            if subevent.rfid_code
+            subevent.rfid_code for subevent in summary.subevents if subevent.rfid_code
         ]
         if not rfid_codes:
             return

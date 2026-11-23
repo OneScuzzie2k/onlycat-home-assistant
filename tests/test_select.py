@@ -39,4 +39,5 @@ def test_empty_onlycat_policy_slect() -> None:
     )
 
     assert select.device.device_id == "OC-00000000001"
-    mock_coordinator.async_add_listener.assert_called_once()
+    mock_coordinator.async_add_listener.assert_not_called()
+    mock_api_client.add_event_listener.assert_not_called()

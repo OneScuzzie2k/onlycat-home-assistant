@@ -69,10 +69,27 @@ class OnlyCatConnectionSensor(BinarySensorEntity):
         )
         self.entity_id = "binary_sensor." + self._attr_unique_id
 
-        api_client.add_event_listener("deviceUpdate", self.on_device_update)
-        api_client.add_event_listener("connectionState", self.on_connection_state)
-        if event_store is not None:
-            event_store.add_event_listener(device.device_id, self.on_event_update)
+        self._update_attributes()
+        self._api_client = api_client
+
+    async def async_added_to_hass(self) -> None:
+        """Subscribe after HA adds the entity and release listeners on removal."""
+        await super().async_added_to_hass()
+        self.async_on_remove(
+            self._api_client.add_event_listener("deviceUpdate", self.on_device_update)
+        )
+        self.async_on_remove(
+            self._api_client.add_event_listener(
+                "connectionState", self.on_connection_state
+            )
+        )
+        if self._event_store is not None:
+            self.async_on_remove(
+                self._event_store.add_event_listener(
+                    self.device.device_id, self.on_event_update
+                )
+            )
+        self._socket_state = self._api_client.connection_state
         self._update_attributes()
 
     async def on_event_update(self, event: object) -> None:

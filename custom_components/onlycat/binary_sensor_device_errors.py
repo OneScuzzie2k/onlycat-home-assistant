@@ -64,7 +64,6 @@ class OnlyCatErrorSensor(CoordinatorEntity, BinarySensorEntity):
         self._attr_unique_id = device.device_id.replace("-", "_").lower() + "_errors"
         self._api_client = api_client
         self.entity_id = "binary_sensor." + self._attr_unique_id
-        self.coordinator.async_add_listener(self._handle_coordinator_update)
 
     @callback
     def _handle_coordinator_update(self) -> None:
@@ -72,29 +71,15 @@ class OnlyCatErrorSensor(CoordinatorEntity, BinarySensorEntity):
         device_data = self.coordinator.data.get(self.device.device_id, {})
         errors = device_data.get("errors") or []
         self._attr_is_on = len(errors) > 0
-        if (
-            device_data.get("metrics", None)
-            is not None
-        ):
+        if device_data.get("metrics", None) is not None:
             metrics = {}
-            for key in [
-                x["measureName"]
-                for x in device_data["metrics"]
-            ]:
-                tmp = [
-                    x
-                    for x in device_data["metrics"]
-                    if x["measureName"] == key
-                ]
+            for key in [x["measureName"] for x in device_data["metrics"]]:
+                tmp = [x for x in device_data["metrics"] if x["measureName"] == key]
                 if len(tmp) == 0:
                     continue
                 tmp.sort(key=lambda x: x["time"], reverse=True)
                 metrics[key] = tmp[0]["value"]
-        self._attr_extra_state_attributes = {
-            "errors": errors
-        } | (
-            metrics
-            if device_data.get("metrics", None) is not None
-            else {}
+        self._attr_extra_state_attributes = {"errors": errors} | (
+            metrics if device_data.get("metrics", None) is not None else {}
         )
         self.async_write_ha_state()

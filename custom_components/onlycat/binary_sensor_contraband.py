@@ -14,24 +14,25 @@ from homeassistant.helpers.device_registry import DeviceInfo
 
 from .api import OnlyCatConnectionState
 from .const import DOMAIN
-from .data.event import Event
+from .data.event import Event, EventClassification
 
 _LOGGER = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
-    from .api import OnlyCatApiClient
     from .data.device import Device
+    from .data.event import Event
     from .data.event_store import EventStore
 
 ENTITY_DESCRIPTION = BinarySensorEntityDescription(
     key="OnlyCat",
-    name="Lock",
-    device_class=BinarySensorDeviceClass.LOCK,
-    translation_key="onlycat_lock_sensor",
+    name="Contraband",
+    device_class=BinarySensorDeviceClass.PROBLEM,
+    icon="mdi:rodent",
+    translation_key="onlycat_contraband_sensor",
 )
 
 
-class OnlyCatLockSensor(BinarySensorEntity):
+class OnlyCatContrabandSensor(BinarySensorEntity):
     """OnlyCat Sensor class."""
 
     _attr_has_entity_name = True
@@ -49,43 +50,41 @@ class OnlyCatLockSensor(BinarySensorEntity):
     def __init__(
         self,
         device: Device,
-        api_client: OnlyCatApiClient,
         event_store: EventStore,
     ) -> None:
         """Initialize the sensor class."""
         self.entity_description = ENTITY_DESCRIPTION
+        self._attr_is_on = False
+        self._attr_raw_data = None
         self.device: Device = device
-        self._current_event: Event = Event()
-        self._attr_is_on = self.device.is_unlocked_in_idle_state()
-        self._attr_unique_id = device.device_id.replace("-", "_").lower() + "_lock"
+        self._attr_unique_id = (
+            device.device_id.replace("-", "_").lower() + "_contraband"
+        )
         self._event_store = event_store
         self.entity_id = "binary_sensor." + self._attr_unique_id
         self._attr_available = self._event_store.connection_state.connected
 
-        self._event_store.add_event_listener(
-            self.device.device_id, self.on_event_update
+    async def async_added_to_hass(self) -> None:
+        """Subscribe after HA adds the entity and release listeners on removal."""
+        await super().async_added_to_hass()
+        self.async_on_remove(
+            self._event_store.add_event_listener(
+                self.device.device_id, self.on_event_update
+            )
         )
-        api_client.add_event_listener("deviceUpdate", self.on_device_update)
-        self._event_store.add_connection_listener(self.on_connection_state)
+        self.async_on_remove(
+            self._event_store.add_connection_listener(self.on_connection_state)
+        )
+        self._attr_available = self._event_store.connection_state.connected
 
     async def on_event_update(self, event: Event) -> None:
         """Handle event update event."""
-        if event is None:
+        if not event:
             return
         if event.frame_count:
-            self._attr_is_on = self.device.is_unlocked_in_idle_state()
-        else:
-            unlocked = self.device.is_unlocked_by_event(event)
-            if unlocked is not None:
-                _LOGGER.debug("Lock state changed to %s for event %s", unlocked, event)
-                self._attr_is_on = unlocked
-        self.async_write_ha_state()
-
-    async def on_device_update(self, data: dict) -> None:
-        """Handle device update event."""
-        if data["deviceId"] != self.device.device_id:
-            return
-        self._attr_is_on = self.device.is_unlocked_in_idle_state()
+            self._attr_is_on = False
+        elif event.event_classification == EventClassification.CONTRABAND:
+            self._attr_is_on = True
         self.async_write_ha_state()
 
     async def on_connection_state(self, state: OnlyCatConnectionState) -> None:

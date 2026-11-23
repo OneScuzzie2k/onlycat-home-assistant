@@ -28,7 +28,7 @@ from homeassistant.helpers.http import request_handler_factory
 
 def _journal(*event_ids: int) -> ActivityJournal:
     journal = ActivityJournal()
-    timestamp = datetime(2026, 9, 29, 7, 0, tzinfo=UTC)
+    timestamp = datetime.now(UTC)
     for event_id in event_ids or (42,):
         journal.append(
             ActivityJournalEntry(

@@ -62,11 +62,18 @@ class OnlyCatEventSensor(BinarySensorEntity):
         self.entity_id = "binary_sensor." + self._attr_unique_id
         self._attr_available = True
 
-        self._event_store.add_event_listener(
-            self.device.device_id, self.on_event_update
+    async def async_added_to_hass(self) -> None:
+        """Subscribe after HA adds the entity and release listeners on removal."""
+        await super().async_added_to_hass()
+        self.async_on_remove(
+            self._event_store.add_event_listener(
+                self.device.device_id, self.on_event_update
+            )
         )
-        self._event_store.add_event_summary_listener(
-            self.device.device_id, self.on_event_summary_update
+        self.async_on_remove(
+            self._event_store.add_event_summary_listener(
+                self.device.device_id, self.on_event_summary_update
+            )
         )
 
     async def on_event_update(self, event: Event) -> None:

@@ -1,0 +1,6 @@
+# Existing local Home Assistant test baseline.
+homeassistant==2026.7.2
+pytest==9.1.1
+pytest-asyncio==1.4.0
+python-socketio==5.16.1
+jsonschema==4.26.0

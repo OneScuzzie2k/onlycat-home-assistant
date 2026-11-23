@@ -92,10 +92,19 @@ class OnlyCatLastVideo(Camera):
         self.entity_id = "camera." + self._attr_unique_id
         self._cached_image: bytes | None = None
         self._attr_available = self._event_store.connection_state.connected
-        self._event_store.add_event_listener(
-            self.device.device_id, self.on_event_update
+
+    async def async_added_to_hass(self) -> None:
+        """Subscribe after HA adds the entity and release listeners on removal."""
+        await super().async_added_to_hass()
+        self.async_on_remove(
+            self._event_store.add_event_listener(
+                self.device.device_id, self.on_event_update
+            )
         )
-        self._event_store.add_connection_listener(self.on_connection_state)
+        self.async_on_remove(
+            self._event_store.add_connection_listener(self.on_connection_state)
+        )
+        self._attr_available = self._event_store.connection_state.connected
 
     async def async_camera_image(
         self,
@@ -103,26 +112,25 @@ class OnlyCatLastVideo(Camera):
         height: int | None = None,  # noqa: ARG002
     ) -> bytes | None:
         """Return a thumbnail image for the camera preview."""
-        image = self._event_store.get_current_image(self.device.device_id)
-        if image is None and self._current_event is not None:
+        event = self._current_event
+        event_id, image = self._event_store.get_current_image(self.device.device_id)
+        if event is not None and (image is None or event_id != event.event_id):
+            image = None
             frame_to_show = (
-                self._current_event.poster_frame_index
-                if self._current_event.poster_frame_index is not None
-                else self._current_event.frame_count // 2
-                if self._current_event.frame_count is not None
+                event.poster_frame_index
+                if event.poster_frame_index is not None
+                else event.frame_count // 2
+                if event.frame_count is not None
                 else 1
             )
-            url = (
-                f"{THUMB_BASEURL}"
-                f"{self._current_event.device_id}/"
-                f"{self._current_event.event_id}/"
-                f"{frame_to_show}"
-            )
+            url = f"{THUMB_BASEURL}{event.device_id}/{event.event_id}/{frame_to_show}"
             session = async_get_clientsession(self.hass)
             async with session.get(url) as resp:
                 if resp.status == HTTPStatus.OK:
                     image = await resp.read()
-                    self._event_store.set_current_image(self.device.device_id, image)
+                    self._event_store.set_current_image(
+                        self.device.device_id, image, event.event_id
+                    )
         return image
 
     async def stream_source(self) -> str | None:
@@ -173,7 +181,7 @@ class OnlyCatLastVideo(Camera):
         else:
             if hasattr(self, "stream") and self.stream:
                 with contextlib.suppress(Exception):
-                    self.stream.stop()
+                    await self.stream.stop()
                 self.stream = None
             self._current_event = event
             self.async_write_ha_state()

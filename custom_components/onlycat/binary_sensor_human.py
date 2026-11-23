@@ -25,14 +25,14 @@ if TYPE_CHECKING:
 
 ENTITY_DESCRIPTION = BinarySensorEntityDescription(
     key="OnlyCat",
-    name="Contraband",
-    device_class=BinarySensorDeviceClass.PROBLEM,
-    icon="mdi:rodent",
-    translation_key="onlycat_contraband_sensor",
+    name="Human activity",
+    device_class=BinarySensorDeviceClass.MOTION,
+    icon="mdi:human",
+    translation_key="onlycat_human_sensor",
 )
 
 
-class OnlyCatContrabandSensor(BinarySensorEntity):
+class OnlyCatHumanSensor(BinarySensorEntity):
     """OnlyCat Sensor class."""
 
     _attr_has_entity_name = True
@@ -57,16 +57,23 @@ class OnlyCatContrabandSensor(BinarySensorEntity):
         self._attr_is_on = False
         self._attr_raw_data = None
         self.device: Device = device
-        self._attr_unique_id = (
-            device.device_id.replace("-", "_").lower() + "_contraband"
-        )
+        self._attr_unique_id = device.device_id.replace("-", "_").lower() + "_human"
         self._event_store = event_store
         self.entity_id = "binary_sensor." + self._attr_unique_id
         self._attr_available = self._event_store.connection_state.connected
-        self._event_store.add_event_listener(
-            self.device.device_id, self.on_event_update
+
+    async def async_added_to_hass(self) -> None:
+        """Subscribe after HA adds the entity and release listeners on removal."""
+        await super().async_added_to_hass()
+        self.async_on_remove(
+            self._event_store.add_event_listener(
+                self.device.device_id, self.on_event_update
+            )
         )
-        self._event_store.add_connection_listener(self.on_connection_state)
+        self.async_on_remove(
+            self._event_store.add_connection_listener(self.on_connection_state)
+        )
+        self._attr_available = self._event_store.connection_state.connected
 
     async def on_event_update(self, event: Event) -> None:
         """Handle event update event."""
@@ -74,7 +81,8 @@ class OnlyCatContrabandSensor(BinarySensorEntity):
             return
         if event.frame_count:
             self._attr_is_on = False
-        elif event.event_classification == EventClassification.CONTRABAND:
+        elif event.event_classification == EventClassification.HUMAN_ACTIVITY:
+            _LOGGER.debug("Human activity detected for event %s", event)
             self._attr_is_on = True
         self.async_write_ha_state()
 

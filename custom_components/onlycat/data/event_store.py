@@ -55,7 +55,7 @@ class EventStore:
         self._connection_state_listeners: list[Callable] = []
         self._current_events: dict[str, Event] = {}
         self._current_summaries: dict[str, EventSummary] = {}
-        self._current_images: dict[str, bytes] = {}
+        self._current_images: dict[str, tuple[int | None, bytes | None]] = {}
         self._pets: dict[str, Pet] = {}
         self._api_client: OnlyCatApiClient = api_client
         self._connection_state = api_client.connection_state
@@ -407,11 +407,15 @@ class EventStore:
             last_subevent = None
             if rfid_code in last_seen_rfids:
                 last_seen = last_seen_rfids[rfid_code]
-                last_seen_at = datetime.fromisoformat(
-                    last_seen.get(
-                        "eventTimestamp", datetime.min.replace(tzinfo=UTC).isoformat()
+                try:
+                    last_seen_at = datetime.fromisoformat(
+                        last_seen.get(
+                            "eventTimestamp",
+                            datetime.min.replace(tzinfo=UTC).isoformat(),
+                        )
                     )
-                )
+                except (TypeError, ValueError):
+                    last_seen_at = datetime.min.replace(tzinfo=UTC)
                 location = last_seen.get("location")
                 last_subevent = SubEvent.from_api_response(
                     last_seen.get("lastSubevent", None) or {}
@@ -735,7 +739,7 @@ class EventStore:
             return
         event = self._current_events.get(device_id, None)
         if event is not None:
-            for callback in self._event_update_listeners[device_id]:
+            for callback in list(self._event_update_listeners[device_id]):
                 await callback(event)
 
     async def run_summary_listeners(self, device_id: str) -> None:
@@ -744,7 +748,7 @@ class EventStore:
             return
         summary = self._current_summaries.get(device_id, None)
         if summary is not None:
-            for callback in self._event_summary_update_listeners[device_id]:
+            for callback in list(self._event_summary_update_listeners[device_id]):
                 await callback(summary)
 
     async def run_pet_listeners(self, rfid_code: str) -> None:
@@ -753,26 +757,26 @@ class EventStore:
             return
         pet = self.find_pet_by_rfid(rfid_code)
         if pet is not None:
-            for callback in self._pet_update_listeners[rfid_code]:
+            for callback in list(self._pet_update_listeners[rfid_code]):
                 await callback(pet)
 
     async def on_connection_state(self, state: OnlyCatConnectionState) -> None:
         """Handle a Socket.IO connection-state update."""
         self._connection_state = state
-        for callback in self._connection_state_listeners:
+        for callback in list(self._connection_state_listeners):
             await callback(state)
 
-    def add_event_listener(self, device_id: str, callback: Callable) -> None:
-        """Add function to a devices listener list."""
-        if device_id not in self._event_update_listeners:
-            self._event_update_listeners[device_id] = []
-        self._event_update_listeners[device_id].append(callback)
+    def add_event_listener(
+        self, device_id: str, callback: Callable
+    ) -> Callable[[], None]:
+        """Add function to a devices listener list, return function to remove it."""
+        return _add_listener(self._event_update_listeners, device_id, callback)
 
-    def add_event_summary_listener(self, device_id: str, callback: Callable) -> None:
-        """Add function to a devices event summary listener list."""
-        if device_id not in self._event_summary_update_listeners:
-            self._event_summary_update_listeners[device_id] = []
-        self._event_summary_update_listeners[device_id].append(callback)
+    def add_event_summary_listener(
+        self, device_id: str, callback: Callable
+    ) -> Callable[[], None]:
+        """Add function to a devices event summary listener list, return remover."""
+        return _add_listener(self._event_summary_update_listeners, device_id, callback)
 
     def add_pet_listener(self, rfid_code: str, callback: Callable) -> Callable:
         """Add function to a pets listener list."""
@@ -812,27 +816,33 @@ class EventStore:
         self, device_id: str, entry: ActivityJournalEntry
     ) -> None:
         """Notify Recent Activity entities of a journal change."""
-        for callback in self._activity_update_listeners.get(device_id, []):
+        for callback in list(self._activity_update_listeners.get(device_id, [])):
             result = callback(entry)
             if asyncio.iscoroutine(result):
                 await result
 
-    def add_connection_listener(self, callback: Callable) -> None:
-        """Add function to be called on connection-state changes."""
+    def add_connection_listener(self, callback: Callable) -> Callable[[], None]:
+        """Subscribe to connection changes and return an idempotent remover."""
         self._connection_state_listeners.append(callback)
+
+        def remove_listener() -> None:
+            if callback in self._connection_state_listeners:
+                self._connection_state_listeners.remove(callback)
+
+        return remove_listener
 
     @property
     def connection_state(self) -> OnlyCatConnectionState:
         """Return the latest known Socket.IO connection state."""
         return self._connection_state
 
-    def get_current_image(self, device_id: str) -> bytes | None:
+    def get_current_image(self, device_id: str) -> tuple[int | None, bytes | None]:
         """Return cached image for given device."""
-        return self._current_images.get(device_id, None)
+        return self._current_images.get(device_id, (None, None))
 
-    def set_current_image(self, device_id: str, image: bytes) -> None:
+    def set_current_image(self, device_id: str, image: bytes, event_id: int) -> None:
         """Cache image for given device."""
-        self._current_images[device_id] = image
+        self._current_images[device_id] = (event_id, image)
 
     @staticmethod
     def is_valid_profile_label(label: object, rfid_code: str) -> bool:
@@ -915,3 +925,17 @@ class EventStore:
     def activity_journal(self) -> ActivityJournal:
         """Return the sanitized activity journal."""
         return self._journal
+
+
+def _add_listener(
+    listeners: dict[str, list[Callable]], key: str, callback: Callable
+) -> Callable[[], None]:
+    """Register callback under key and return a function that removes it again."""
+    key_listeners = listeners.setdefault(key, [])
+    key_listeners.append(callback)
+
+    def remove_listener() -> None:
+        if callback in key_listeners:
+            key_listeners.remove(callback)
+
+    return remove_listener

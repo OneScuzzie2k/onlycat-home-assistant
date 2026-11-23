@@ -290,12 +290,19 @@ class OnlyCatApiClient:
         """Return whether the socket client is currently connected."""
         return self._socket_is_ready()
 
-    def add_event_listener(self, event: str, callback: Any) -> None:
-        """Add an event listener."""
-        self._listeners[event].append(callback)
+    def add_event_listener(self, event: str, callback: Any) -> Callable[[], None]:
+        """Add an event listener, return a function that removes it again."""
+        listeners = self._listeners[event]
+        listeners.append(callback)
         _LOGGER.debug(
             "Added event listener for event %s: %s", event, callback.__module__
         )
+
+        def remove_listener() -> None:
+            if callback in listeners:
+                listeners.remove(callback)
+
+        return remove_listener
 
     def clear_event_listeners(self) -> None:
         """Deregister callbacks which may reference unloaded HA entities."""
@@ -306,7 +313,7 @@ class OnlyCatApiClient:
         safe_args = _redact_sensitive(args)
         _LOGGER.debug("Received event: %s with args: %s", event, safe_args)
         trace_event("socket_event", event=event, args=safe_args)
-        for callback in self._listeners[event]:
+        for callback in list(self._listeners[event]):
             try:
                 await callback(*args)
             except Exception:
@@ -558,7 +565,7 @@ class OnlyCatApiClient:
             )
         if event.startswith("get"):
             await self._set_authorization_state(True)
-        for callback in self._listeners[event] if notify_listeners else ():
+        for callback in list(self._listeners[event]) if notify_listeners else ():
             try:
                 await callback(reply)
             except Exception:

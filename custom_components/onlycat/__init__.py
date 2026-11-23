@@ -367,11 +367,15 @@ async def _refresh_pet_snapshots_with_notify(
             last_subevent = None
             if rfid_code in last_seen_rfids:
                 last_seen = last_seen_rfids[rfid_code]
-                last_seen_at = datetime.fromisoformat(
-                    last_seen.get(
-                        "eventTimestamp", datetime.min.replace(tzinfo=UTC).isoformat()
+                try:
+                    last_seen_at = datetime.fromisoformat(
+                        last_seen.get(
+                            "eventTimestamp",
+                            datetime.min.replace(tzinfo=UTC).isoformat(),
+                        )
                     )
-                )
+                except (TypeError, ValueError):
+                    last_seen_at = datetime.min.replace(tzinfo=UTC)
                 last_seen_location = last_seen.get("location")
                 last_subevent = SubEvent.from_api_response(
                     last_seen.get("lastSubevent", None) or {}
