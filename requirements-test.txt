@@ -4,3 +4,5 @@ pytest==9.1.1
 pytest-asyncio==1.4.0
 python-socketio==5.16.1
 jsonschema==4.26.0
+# Required when importing Home Assistant's camera/stream platforms in tests.
+numpy==2.3.2
